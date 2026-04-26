@@ -539,6 +539,18 @@
   .ciber-badge-solid-amber { background: var(--amber); color: #1a1a1a; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-family: var(--mono); font-weight: 700; }
   .ciber-badge-gray { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); padding: 4px 10px; border-radius: 4px; font-size: 10px; font-family: var(--mono); font-weight: 700; }
 
+  .ciber-select {
+    font-weight: 700 !important;
+    font-size: 10px !important;
+    padding: 4px 24px 4px 10px !important;
+    border-radius: 4px !important;
+  }
+  .ciber-select.red { background-color: rgba(239,68,68,0.12); color: #f87171; border-color: rgba(239,68,68,0.2); }
+  .ciber-select.amber { background-color: rgba(245,158,11,0.12); color: #fbbf24; border-color: rgba(245,158,11,0.2); }
+  .ciber-select.solid-red { background-color: var(--red); color: white; border-color: var(--red); }
+  .ciber-select.solid-amber { background-color: var(--amber); color: #1a1a1a; border-color: var(--amber); }
+  .ciber-select.gray { background-color: var(--surface2); color: var(--text2); border-color: var(--border); }
+
   .vuln-name { color: #f87171; font-weight: 600; font-size: 12px; }
   .vuln-desc { color: var(--text2); font-size: 12px; line-height: 1.5; }
   .vuln-opp { color: var(--text2); font-size: 11px; font-family: var(--mono); }
@@ -994,7 +1006,7 @@
     <div class="table-wrapper">
       <div class="table-header-row">
         <span class="table-title">// VULNERABILIDADES_IDENTIFICADAS</span>
-        <span class="table-meta" style="color:var(--red);">⚠ 3 riesgos activos</span>
+        <span class="table-meta" style="color:var(--red);" id="ciber-count">⚠ 3 riesgos activos</span>
       </div>
       <div style="overflow-x:auto;">
         <table class="data-table ciber-table">
@@ -1006,39 +1018,17 @@
               <th style="width:120px;">Dif. Técnica (Fix)</th>
               <th style="width:100px;">Urgencia</th>
               <th style="width:110px;">Nivel de Riesgo</th>
+              <th style="width:44px;"></th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td class="vuln-name">Exposición de claves API en herramientas no seguras</td>
-              <td class="vuln-opp">Automatización envío de facturas a la asesoría</td>
-              <td class="vuln-desc">Las integraciones vía Zapier/n8n usan claves API copiadas sin cifrado en Notion o Sheets.</td>
-              <td><span class="ciber-badge-gray">Baja</span></td>
-              <td><span class="ciber-badge-amber">Media</span></td>
-              <td><span class="ciber-badge-solid-red">Alto</span></td>
-            </tr>
-            <tr>
-              <td class="vuln-name">Automatizaciones sin control de autenticación avanzada</td>
-              <td class="vuln-opp">Análisis y data studio con LLM</td>
-              <td class="vuln-desc">Workflows que envían info sensible entre CRMs/DBs no tienen medidas como OAuth2 o expiración de tokens.</td>
-              <td><span class="ciber-badge-gray">Media</span></td>
-              <td><span class="ciber-badge-red">Alta</span></td>
-              <td><span class="ciber-badge-solid-red">Alto</span></td>
-            </tr>
-            <tr>
-              <td class="vuln-name">Envío de datos sensibles por canales inseguros</td>
-              <td class="vuln-opp">Revisión y archivo de estudios médicos</td>
-              <td class="vuln-desc">Automatizaciones que envían emails con informes o CSVs a través de Gmail sin cifrado de extremo a extremo.</td>
-              <td><span class="ciber-badge-gray">Media</span></td>
-              <td><span class="ciber-badge-red">Alta</span></td>
-              <td><span class="ciber-badge-solid-amber">Medio</span></td>
-            </tr>
-            <tr class="note-row">
-              <td colspan="6">* Este listado se actualizará durante la fase técnica de implementación *</td>
-            </tr>
+          <tbody id="ciber-tbody">
           </tbody>
         </table>
       </div>
+      <button class="add-row-btn" onclick="addCiber()" style="border-top-color: rgba(239,68,68,0.2); color: #f87171;">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Añadir nueva vulnerabilidad
+      </button>
     </div>
   </div>
 
@@ -1109,6 +1099,12 @@ let roadmapData = [
   { fase: 'Fase 3', label: 'IA Avanzada', periodo: 'Mes 4+', items: [
     { id: 4, nombre: 'Análisis y data studio con LLM', estado: 'Sin empezar' },
   ]},
+];
+
+let ciberData = [
+  { id: 1, nombre: 'Exposición de claves API en herramientas no seguras', oportunidad: 'Automatización envío de facturas a la asesoría', descripcion: 'Las integraciones vía Zapier/n8n usan claves API copiadas sin cifrado en Notion o Sheets.', dificultad: 'Baja', urgencia: 'Media', riesgo: 'Alto' },
+  { id: 2, nombre: 'Automatizaciones sin control de autenticación avanzada', oportunidad: 'Análisis y data studio con LLM', descripcion: 'Workflows que envían info sensible entre CRMs/DBs no tienen medidas como OAuth2 o expiración de tokens.', dificultad: 'Media', urgencia: 'Alta', riesgo: 'Alto' },
+  { id: 3, nombre: 'Envío de datos sensibles por canales inseguros', oportunidad: 'Revisión y archivo de estudios médicos', descripcion: 'Automatizaciones que envían emails con informes o CSVs a través de Gmail sin cifrado de extremo a extremo.', dificultad: 'Media', urgencia: 'Alta', riesgo: 'Medio' }
 ];
 
 // ---- TABS ----
@@ -1290,6 +1286,7 @@ function saveProgressSilent() {
       inputs: values,
       oportunidades: oportunidades,
       roadmapData: roadmapData,
+      ciberData: ciberData,
       lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true }).catch(err => console.error("Error guardando en Firebase: ", err));
   }, 1200);
@@ -1319,6 +1316,7 @@ async function loadProgress() {
       
       if (data.oportunidades) oportunidades = data.oportunidades;
       if (data.roadmapData) roadmapData = data.roadmapData;
+      if (data.ciberData) ciberData = data.ciberData;
     }
   } catch(e) {
     console.error("Error cargando de Firebase:", e);
@@ -1327,6 +1325,7 @@ async function loadProgress() {
   // Renderizar la UI con los datos cargados (o los por defecto si no existe)
   renderOportunidades();
   renderKanban();
+  renderCiber();
 }
 
 function descargarPDF() {
@@ -1339,6 +1338,83 @@ document.addEventListener('input', (e) => {
     saveProgressSilent();
   }
 });
+
+// ---- CIBERSEGURIDAD ----
+function getCiberSelectClass(type, value) {
+  let base = 'table-select ciber-select ';
+  if (type === 'riesgo') {
+    return base + (value === 'Alto' ? 'solid-red' : (value === 'Medio' ? 'solid-amber' : 'gray'));
+  }
+  return base + (value === 'Alta' ? 'red' : (value === 'Media' ? 'amber' : 'gray'));
+}
+
+function renderCiber() {
+  const tbody = document.getElementById('ciber-tbody');
+  tbody.innerHTML = '';
+  ciberData.forEach(v => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><textarea class="table-textarea vuln-name" onchange="updateCiber(${v.id},'nombre',this.value)">${v.nombre}</textarea></td>
+      <td><textarea class="table-textarea vuln-opp" onchange="updateCiber(${v.id},'oportunidad',this.value)">${v.oportunidad}</textarea></td>
+      <td><textarea class="table-textarea vuln-desc" onchange="updateCiber(${v.id},'descripcion',this.value)">${v.descripcion}</textarea></td>
+      <td>
+        <select class="${getCiberSelectClass('dif', v.dificultad)}" onchange="updateCiber(${v.id},'dificultad',this.value)">
+          ${['Alta','Media','Baja'].map(opt => `<option${opt===v.dificultad?' selected':''}>${opt}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <select class="${getCiberSelectClass('urgencia', v.urgencia)}" onchange="updateCiber(${v.id},'urgencia',this.value)">
+          ${['Alta','Media','Baja'].map(opt => `<option${opt===v.urgencia?' selected':''}>${opt}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <select class="${getCiberSelectClass('riesgo', v.riesgo)}" onchange="updateCiber(${v.id},'riesgo',this.value)">
+          ${['Alto','Medio','Bajo'].map(opt => `<option${opt===v.riesgo?' selected':''}>${opt}</option>`).join('')}
+        </select>
+      </td>
+      <td><button class="del-btn" onclick="removeCiber(${v.id})" title="Eliminar vulnerabilidad"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  
+  const trNote = document.createElement('tr');
+  trNote.className = 'note-row';
+  trNote.innerHTML = '<td colspan="7">* Este listado se actualizará durante la fase técnica de implementación *</td>';
+  tbody.appendChild(trNote);
+  
+  const highRisks = ciberData.filter(v => v.riesgo === 'Alto' || v.riesgo === 'Medio').length;
+  const countSpan = document.getElementById('ciber-count');
+  if(countSpan) countSpan.textContent = `⚠ ${highRisks} riesgos activos`;
+}
+
+function updateCiber(id, field, value) {
+  const item = ciberData.find(o => o.id === id);
+  if (item) {
+    item[field] = value;
+    saveProgressSilent();
+    if (field === 'dificultad' || field === 'urgencia' || field === 'riesgo') renderCiber();
+  }
+}
+
+function addCiber() {
+  ciberData.push({ id: Date.now(), nombre: '', oportunidad: '', descripcion: '', dificultad: 'Baja', urgencia: 'Media', riesgo: 'Bajo' });
+  renderCiber();
+  saveProgressSilent();
+  const tbody = document.getElementById('ciber-tbody');
+  const rows = tbody.querySelectorAll('tr:not(.note-row)');
+  if(rows.length > 0) rows[rows.length - 1].querySelector('textarea').focus();
+}
+
+function removeCiber(id) {
+  if (confirm('¿Eliminar esta vulnerabilidad?')) {
+    const idx = ciberData.findIndex(o => o.id === id);
+    if (idx > -1) { 
+      ciberData.splice(idx, 1); 
+      renderCiber(); 
+      saveProgressSilent();
+    }
+  }
+}
 
 // ---- INIT ----
 loadProgress();
