@@ -1055,9 +1055,41 @@
 
 </main>
 
-<div class="toast" id="toast">✓ Progreso guardado correctamente</div>
+<div class="toast" id="toast">✓ Progreso guardado en la nube</div>
+
+<!-- Firebase Compat SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore-compat.js"></script>
 
 <script>
+// ---- FIREBASE INIT ----
+const firebaseConfig = {
+  apiKey: "AIzaSyCL_DIwyAPWNtFkcAttkQx4YdqpbTlfclM",
+  authDomain: "baozen-auditoria.firebaseapp.com",
+  projectId: "baozen-auditoria",
+  storageBucket: "baozen-auditoria.firebasestorage.app",
+  messagingSenderId: "949511723895",
+  appId: "1:949511723895:web:8fe042fbeb032c5ca9df72",
+  measurementId: "G-M2YF5QJ299"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ---- CLIENT IDENTIFIER ----
+const urlParams = new URLSearchParams(window.location.search);
+let clienteId = urlParams.get('cliente');
+
+if (!clienteId) {
+  clienteId = prompt("Para empezar, ingresa el ID o nombre del cliente (ej: empresa_pepito):");
+  if (!clienteId) clienteId = 'demo';
+  window.history.replaceState(null, null, "?cliente=" + clienteId);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const subtitle = document.querySelector('.header-title p');
+  if(subtitle) subtitle.textContent = `// cliente: ${clienteId}`;
+});
+
 // ---- DATA ----
 let oportunidades = [
   { id: 1, solucion: 'Revisión y archivo de estudios médicos', area: 'Delivery', problema: 'Posible error humano en la ejecución del proceso', impacto: 'Alto', dificultad: 'Media', urgencia: 'Media', descripcion: 'Configurar RPA para extraer datos y archivar en CRM.', riesgo: 'Bajo' },
@@ -1243,13 +1275,24 @@ function addKanbanTask(fase) {
   }
 }
 
-// ---- SAVE ----
+// ---- SAVE & LOAD (FIREBASE) ----
+let saveTimeout = null;
+
 function saveProgressSilent() {
-  const inputs = document.querySelectorAll('#tab-ventas input, #tab-ventas textarea, #tab-operaciones input, #tab-operaciones textarea');
-  const values = Array.from(inputs).map(el => el.value);
-  localStorage.setItem('aima_inputs', JSON.stringify(values));
-  localStorage.setItem('aima_oportunidades', JSON.stringify(oportunidades));
-  localStorage.setItem('aima_roadmap', JSON.stringify(roadmapData));
+  if (saveTimeout) clearTimeout(saveTimeout);
+  
+  // Usamos debounce para no hacer peticiones a Firebase con cada tecla presionada
+  saveTimeout = setTimeout(() => {
+    const inputs = document.querySelectorAll('#tab-ventas input, #tab-ventas textarea, #tab-operaciones input, #tab-operaciones textarea');
+    const values = Array.from(inputs).map(el => el.value);
+    
+    db.collection('clientes').doc(clienteId).set({
+      inputs: values,
+      oportunidades: oportunidades,
+      roadmapData: roadmapData,
+      lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).catch(err => console.error("Error guardando en Firebase: ", err));
+  }, 1200);
 }
 
 function saveProgress() {
@@ -1259,18 +1302,31 @@ function saveProgress() {
   setTimeout(() => toast.classList.remove('show'), 2800);
 }
 
-function loadProgress() {
-  const savedValues = JSON.parse(localStorage.getItem('aima_inputs') || 'null');
-  if (savedValues) {
-    const inputs = document.querySelectorAll('#tab-ventas input, #tab-ventas textarea, #tab-operaciones input, #tab-operaciones textarea');
-    inputs.forEach((el, index) => {
-      if (savedValues[index] !== undefined) el.value = savedValues[index];
-    });
+async function loadProgress() {
+  try {
+    const docRef = db.collection('clientes').doc(clienteId);
+    const docSnap = await docRef.get();
+    
+    if (docSnap.exists) {
+      const data = docSnap.data();
+      
+      if (data.inputs) {
+        const inputs = document.querySelectorAll('#tab-ventas input, #tab-ventas textarea, #tab-operaciones input, #tab-operaciones textarea');
+        inputs.forEach((el, index) => {
+          if (data.inputs[index] !== undefined) el.value = data.inputs[index];
+        });
+      }
+      
+      if (data.oportunidades) oportunidades = data.oportunidades;
+      if (data.roadmapData) roadmapData = data.roadmapData;
+    }
+  } catch(e) {
+    console.error("Error cargando de Firebase:", e);
   }
-  const savedOpp = localStorage.getItem('aima_oportunidades');
-  if (savedOpp) oportunidades = JSON.parse(savedOpp);
-  const savedRoadmap = localStorage.getItem('aima_roadmap');
-  if (savedRoadmap) roadmapData = JSON.parse(savedRoadmap);
+  
+  // Renderizar la UI con los datos cargados (o los por defecto si no existe)
+  renderOportunidades();
+  renderKanban();
 }
 
 function descargarPDF() {
@@ -1286,8 +1342,6 @@ document.addEventListener('input', (e) => {
 
 // ---- INIT ----
 loadProgress();
-renderOportunidades();
-renderKanban();
 </script>
 </body>
 </html>
