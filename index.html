@@ -612,8 +612,14 @@
     font-size: 12px;
     font-weight: 500;
     color: var(--text);
-    margin-bottom: 10px;
     line-height: 1.4;
+    transition: all 0.2s;
+  }
+
+  .kanban-card.completed {
+    opacity: 0.6;
+    background: transparent;
+    border-style: dashed;
   }
 
   .kanban-status-select {
@@ -1173,9 +1179,19 @@ function renderKanban() {
       </div>
       <div class="kanban-col-body" id="kanban-body-${col.fase.replace(/\s/g,'')}">
         ${col.items.map(item => `
-          <div class="kanban-card">
-            <div class="kanban-card-name">${item.nombre}</div>
-            <select class="kanban-status-select" onchange="updateKanbanStatus('${col.fase}',${item.id},this.value)">
+          <div class="kanban-card ${item.estado === 'Completado' ? 'completed' : ''}">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+              <label style="display:flex; gap:8px; align-items:flex-start; cursor:pointer; flex:1;">
+                <input type="checkbox" ${item.estado === 'Completado' ? 'checked' : ''} 
+                       onchange="toggleKanbanTask('${col.fase}', ${item.id}, this.checked)"
+                       style="margin-top:2px; accent-color: var(--accent); cursor:pointer;">
+                <span class="kanban-card-name" style="${item.estado === 'Completado' ? 'text-decoration:line-through; color:var(--text3);' : ''}">${item.nombre}</span>
+              </label>
+              <button class="del-btn" style="padding:2px; margin-top:-2px;" onclick="removeKanbanTask('${col.fase}', ${item.id})" title="Eliminar tarea">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+              </button>
+            </div>
+            <select class="kanban-status-select" onchange="updateKanbanStatus('${col.fase}',${item.id},this.value)" style="margin-top:10px; width:100%;">
               ${['Sin empezar','En análisis','Desarrollando','Completado'].map(s => `<option${s===item.estado?' selected':''}>${s}</option>`).join('')}
             </select>
           </div>
@@ -1194,6 +1210,23 @@ function updateKanbanStatus(fase, id, value) {
     if (item) {
       item.estado = value; 
       saveProgressSilent();
+      renderKanban(); // Re-render para actualizar estilos visuales
+    }
+  }
+}
+
+function toggleKanbanTask(fase, id, isCompleted) {
+  const status = isCompleted ? 'Completado' : 'Sin empezar';
+  updateKanbanStatus(fase, id, status);
+}
+
+function removeKanbanTask(fase, id) {
+  if (confirm('¿Eliminar esta tarea del roadmap?')) {
+    const col = roadmapData.find(c => c.fase === fase);
+    if (col) {
+      col.items = col.items.filter(i => i.id !== id);
+      saveProgressSilent();
+      renderKanban();
     }
   }
 }
