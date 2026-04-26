@@ -168,6 +168,28 @@
 
   .save-btn:active { transform: translateY(0); }
 
+  .pdf-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    color: var(--text2);
+    border: 1px solid var(--border);
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: all 0.2s;
+  }
+
+  .pdf-btn:hover {
+    color: var(--text);
+    border-color: var(--text3);
+    background: var(--surface2);
+  }
+
   /* Tab nav */
   .tab-nav {
     max-width: 1400px;
@@ -693,6 +715,25 @@
   .logo-badge-wrap {
     position: relative;
   }
+
+  /* Estilos para impresion PDF */
+  @media print {
+    body { background: white !important; color: black !important; min-height: auto; }
+    body::before { display: none !important; }
+    header, .tab-nav, .save-btn, .pdf-btn, .add-row-btn, .add-task-btn, .del-btn { display: none !important; }
+    main { padding: 0 !important; max-width: 100% !important; }
+    
+    .tab-content { display: block !important; opacity: 1 !important; transform: none !important; page-break-after: always; padding-top: 20px; }
+    .tab-content:last-child { page-break-after: auto; }
+    
+    * { color: black !important; }
+    .card, .card-full, .table-wrapper, .kanban-col, .section-banner { border: 1px solid #ccc !important; box-shadow: none !important; page-break-inside: avoid; background: white !important; margin-bottom: 20px; }
+    input, textarea, select { border: 1px solid #ccc !important; background: transparent !important; color: black !important; }
+    .table-header-row { border-bottom: 1px solid #ccc !important; }
+    .data-table thead tr { background: #f0f0f0 !important; }
+    .ciber-table thead tr { background: #f0f0f0 !important; }
+    .table-select, .kanban-status-select { appearance: none; -webkit-appearance: none; background-image: none !important; }
+  }
 </style>
 </head>
 <body>
@@ -711,6 +752,10 @@
         <div class="dot"></div>
         SESIÓN ACTIVA
       </div>
+      <button class="pdf-btn" onclick="descargarPDF()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Descargar PDF
+      </button>
       <button class="save-btn" onclick="saveProgress()">
         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
         Guardar Progreso
@@ -1008,14 +1053,14 @@
 
 <script>
 // ---- DATA ----
-const oportunidades = [
+let oportunidades = [
   { id: 1, solucion: 'Revisión y archivo de estudios médicos', area: 'Delivery', problema: 'Posible error humano en la ejecución del proceso', impacto: 'Alto', dificultad: 'Media', urgencia: 'Media', descripcion: 'Configurar RPA para extraer datos y archivar en CRM.', riesgo: 'Bajo' },
   { id: 2, solucion: 'Análisis y data studio informes médicos con LLM', area: 'Delivery', problema: 'No se tiene un balance tangible de problemas comunes', impacto: 'Alto', dificultad: 'Alta', urgencia: 'Media', descripcion: 'Conectar base de datos con LLM para generar dashboards automáticos.', riesgo: 'Medio' },
   { id: 3, solucion: 'Agente IA que resuelva incidencias con clientes', area: 'Delivery', problema: 'Altos tiempos de respuesta y margen de error a la entrega', impacto: 'Alto', dificultad: 'Media', urgencia: 'Alta', descripcion: 'Chatbot entrenado con la base de conocimiento de la empresa.', riesgo: 'Bajo' },
   { id: 4, solucion: 'Automatización envío de facturas a la asesoría', area: 'Operaciones', problema: 'Pérdida de tiempo (10h/trimestre) en enviar facturas', impacto: 'Media', dificultad: 'Baja', urgencia: 'Media', descripcion: 'Script automático que recopile PDFs y los envíe por email/API.', riesgo: 'Bajo' },
 ];
 
-const roadmapData = [
+let roadmapData = [
   { fase: 'Fase 1', label: 'Quick Wins', periodo: 'Mes 1', items: [
     { id: 1, nombre: 'Automatización envío de facturas a la asesoría', estado: 'Sin empezar' },
     { id: 2, nombre: 'Agente IA básico para FAQs de clientes', estado: 'Sin empezar' },
@@ -1090,12 +1135,16 @@ function renderOportunidades() {
 
 function updateOp(id, field, value) {
   const op = oportunidades.find(o => o.id === id);
-  if (op) op[field] = value;
+  if (op) {
+    op[field] = value;
+    saveProgressSilent();
+  }
 }
 
 function addOportunidad() {
   oportunidades.push({ id: Date.now(), solucion: '', area: 'Ventas', problema: '', impacto: 'Bajo', dificultad: 'Baja', urgencia: 'Baja', descripcion: '', riesgo: 'Bajo' });
   renderOportunidades();
+  saveProgressSilent();
   // scroll to last row
   const tbody = document.getElementById('opp-tbody');
   tbody.lastElementChild?.querySelector('textarea')?.focus();
@@ -1103,7 +1152,11 @@ function addOportunidad() {
 
 function removeOp(id) {
   const idx = oportunidades.findIndex(o => o.id === id);
-  if (idx > -1) { oportunidades.splice(idx, 1); renderOportunidades(); }
+  if (idx > -1) { 
+    oportunidades.splice(idx, 1); 
+    renderOportunidades(); 
+    saveProgressSilent();
+  }
 }
 
 // ---- ROADMAP ----
@@ -1136,7 +1189,13 @@ function renderKanban() {
 
 function updateKanbanStatus(fase, id, value) {
   const col = roadmapData.find(c => c.fase === fase);
-  if (col) { const item = col.items.find(i => i.id === id); if (item) item.estado = value; }
+  if (col) { 
+    const item = col.items.find(i => i.id === id); 
+    if (item) {
+      item.estado = value; 
+      saveProgressSilent();
+    }
+  }
 }
 
 function addKanbanTask(fase) {
@@ -1146,18 +1205,54 @@ function addKanbanTask(fase) {
     if (nombre && nombre.trim()) {
       col.items.push({ id: Date.now(), nombre: nombre.trim(), estado: 'Sin empezar' });
       renderKanban();
+      saveProgressSilent();
     }
   }
 }
 
 // ---- SAVE ----
+function saveProgressSilent() {
+  const inputs = document.querySelectorAll('#tab-ventas input, #tab-ventas textarea, #tab-operaciones input, #tab-operaciones textarea');
+  const values = Array.from(inputs).map(el => el.value);
+  localStorage.setItem('aima_inputs', JSON.stringify(values));
+  localStorage.setItem('aima_oportunidades', JSON.stringify(oportunidades));
+  localStorage.setItem('aima_roadmap', JSON.stringify(roadmapData));
+}
+
 function saveProgress() {
+  saveProgressSilent();
   const toast = document.getElementById('toast');
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 2800);
 }
 
+function loadProgress() {
+  const savedValues = JSON.parse(localStorage.getItem('aima_inputs') || 'null');
+  if (savedValues) {
+    const inputs = document.querySelectorAll('#tab-ventas input, #tab-ventas textarea, #tab-operaciones input, #tab-operaciones textarea');
+    inputs.forEach((el, index) => {
+      if (savedValues[index] !== undefined) el.value = savedValues[index];
+    });
+  }
+  const savedOpp = localStorage.getItem('aima_oportunidades');
+  if (savedOpp) oportunidades = JSON.parse(savedOpp);
+  const savedRoadmap = localStorage.getItem('aima_roadmap');
+  if (savedRoadmap) roadmapData = JSON.parse(savedRoadmap);
+}
+
+function descargarPDF() {
+  saveProgressSilent();
+  window.print();
+}
+
+document.addEventListener('input', (e) => {
+  if (e.target.matches('#tab-ventas input, #tab-ventas textarea, #tab-operaciones input, #tab-operaciones textarea')) {
+    saveProgressSilent();
+  }
+});
+
 // ---- INIT ----
+loadProgress();
 renderOportunidades();
 renderKanban();
 </script>
