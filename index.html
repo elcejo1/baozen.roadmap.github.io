@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #181c24;
+    --border: #1e2433;
+    --accent: #3b82f6;
+    --accent2: #60a5fa;
+    --accent-glow: rgba(59,130,246,0.15);
+    --green: #10b981;
+    --red: #ef4444;
+    --amber: #f59e0b;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #4b5563;
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Header */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,12,16,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    gap: 16px;
+  }
+
+  .logo-block {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .logo-badge {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent2);
+    background: var(--accent-glow);
+    border: 1px solid rgba(59,130,246,0.3);
+    padding: 6px 12px;
+    letter-spacing: 3px;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .logo-badge::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(59,130,246,0.1), transparent);
+    animation: shimmer 3s infinite;
+  }
+
+  @keyframes shimmer { to { left: 100%; } }
+
+  .header-title h1 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .header-title p {
+    font-size: 11px;
+    color: var(--text2);
+    font-family: var(--mono);
+    letter-spacing: 0.5px;
+  }
+
+  /* Status indicators */
+  .header-status {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .status-dot {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text2);
+    font-family: var(--mono);
+  }
+
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .save-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .save-btn:hover {
+    background: var(--accent2);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(59,130,246,0.4);
+  }
+
+  .save-btn:active { transform: translateY(0); }
+
+  /* Tab nav */
+  .tab-nav {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    gap: 2px;
+    border-top: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .tab-nav::-webkit-scrollbar { display: none; }
+
+  .tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 12px 18px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text3);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: all 0.2s;
+    white-space: nowrap;
+    position: relative;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+
+  .tab-btn svg { width: 14px; height: 14px; }
+
+  .tab-btn:hover { color: var(--text2); }
+
+  .tab-btn.active {
+    color: var(--accent2);
+    border-bottom-color: var(--accent);
+  }
+
+  .tab-btn .tab-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    background: var(--surface2);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--text3);
+  }
+
+  .tab-btn.active .tab-num {
+    background: var(--accent-glow);
+    color: var(--accent2);
+    border: 1px solid rgba(59,130,246,0.3);
+  }
+
+  /* Main content */
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Section banner */
+  .section-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 18px 22px;
+    border-radius: 8px;
+    margin-bottom: 28px;
+  }
+
+  .section-banner svg { color: var(--accent2); flex-shrink: 0; margin-top: 2px; }
+
+  .section-banner h2 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent2);
+    margin-bottom: 4px;
+    font-family: var(--mono);
+    letter-spacing: 0.5px;
+  }
+
+  .section-banner p {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+
+  /* Cards grid */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+    gap: 20px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    transition: border-color 0.2s;
+  }
+
+  .card:hover { border-color: rgba(59,130,246,0.3); }
+
+  .card-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text2);
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title::before {
+    content: '';
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* Input fields */
+  .field-group { margin-bottom: 18px; }
+
+  .field-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text2);
+    margin-bottom: 6px;
+    font-family: var(--mono);
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+
+  .field-input, .field-textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    padding: 10px 12px;
+    outline: none;
+    transition: all 0.2s;
+    resize: none;
+  }
+
+  .field-input::placeholder, .field-textarea::placeholder {
+    color: var(--text3);
+  }
+
+  .field-input:focus, .field-textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+    background: var(--surface);
+  }
+
+  .field-textarea { min-height: 80px; line-height: 1.5; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* Full-width card */
+  .card-full {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    margin-top: 20px;
+  }
+
+  /* TABLE: Oportunidades */
+  .table-wrapper {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .table-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .table-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    font-family: var(--mono);
+    letter-spacing: 1px;
+  }
+
+  .table-meta {
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--mono);
+  }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .data-table thead tr {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .data-table thead th {
+    padding: 10px 12px;
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text3);
+    white-space: nowrap;
+  }
+
+  .data-table tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  .data-table tbody tr:last-child { border-bottom: none; }
+  .data-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+  .data-table td { padding: 8px 10px; vertical-align: top; }
+
+  .table-input, .table-textarea, .table-select {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 12px;
+    padding: 6px 8px;
+    outline: none;
+    transition: all 0.15s;
+    width: 100%;
+    resize: none;
+  }
+
+  .table-input:hover, .table-textarea:hover, .table-select:hover {
+    border-color: var(--border);
+  }
+
+  .table-input:focus, .table-textarea:focus, .table-select:focus {
+    border-color: var(--accent);
+    background: var(--surface2);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+  }
+
+  .table-textarea { min-height: 60px; line-height: 1.4; }
+
+  .table-select {
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 24px;
+  }
+
+  .table-select option { background: var(--surface2); color: var(--text); }
+
+  /* Badge chips */
+  .chip {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: var(--mono);
+    letter-spacing: 0.5px;
+  }
+
+  .chip-green { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
+  .chip-amber { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
+  .chip-red { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+  .chip-gray { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+
+  /* Add / Delete row buttons */
+  .add-row-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent2);
+    background: none;
+    border: none;
+    border-top: 1px solid var(--border);
+    cursor: pointer;
+    font-family: var(--mono);
+    width: 100%;
+    transition: background 0.15s;
+    letter-spacing: 0.3px;
+  }
+
+  .add-row-btn:hover { background: var(--accent-glow); }
+
+  .del-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text3);
+    padding: 6px;
+    border-radius: 4px;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+  }
+
+  .del-btn:hover { color: var(--red); background: rgba(239,68,68,0.1); }
+
+  /* Ciber table */
+  .ciber-table thead tr { background: #0f1420; }
+
+  .ciber-badge-red { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.2); padding: 4px 10px; border-radius: 4px; font-size: 10px; font-family: var(--mono); font-weight: 700; }
+  .ciber-badge-amber { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.2); padding: 4px 10px; border-radius: 4px; font-size: 10px; font-family: var(--mono); font-weight: 700; }
+  .ciber-badge-solid-red { background: var(--red); color: white; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-family: var(--mono); font-weight: 700; }
+  .ciber-badge-solid-amber { background: var(--amber); color: #1a1a1a; padding: 4px 10px; border-radius: 4px; font-size: 10px; font-family: var(--mono); font-weight: 700; }
+  .ciber-badge-gray { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); padding: 4px 10px; border-radius: 4px; font-size: 10px; font-family: var(--mono); font-weight: 700; }
+
+  .vuln-name { color: #f87171; font-weight: 600; font-size: 12px; }
+  .vuln-desc { color: var(--text2); font-size: 12px; line-height: 1.5; }
+  .vuln-opp { color: var(--text2); font-size: 11px; font-family: var(--mono); }
+
+  /* Note row */
+  .note-row td {
+    padding: 16px;
+    text-align: center;
+    color: var(--text3);
+    font-size: 11px;
+    font-style: italic;
+    font-family: var(--mono);
+    border-top: 1px dashed var(--border);
+  }
+
+  /* Roadmap kanban */
+  .kanban-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .kanban-col {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .kanban-col-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .kanban-col-label {
+    font-size: 10px;
+    font-weight: 700;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text2);
+    margin-bottom: 3px;
+  }
+
+  .kanban-col-phase {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .kanban-col-body { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+
+  .kanban-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .kanban-card:hover {
+    border-color: rgba(59,130,246,0.3);
+    box-shadow: 0 0 0 1px rgba(59,130,246,0.1);
+    transform: translateY(-1px);
+  }
+
+  .kanban-card-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+
+  .kanban-status-select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text2);
+    font-size: 10px;
+    font-family: var(--mono);
+    padding: 4px 8px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .kanban-status-select:focus { border-color: var(--accent); }
+  .kanban-status-select option { background: var(--surface2); }
+
+  .add-task-btn {
+    background: none;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    color: var(--text3);
+    font-size: 12px;
+    font-family: var(--mono);
+    padding: 10px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.15s;
+  }
+
+  .add-task-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent2);
+    background: var(--accent-glow);
+  }
+
+  /* Section headers */
+  .section-heading {
+    margin-bottom: 24px;
+  }
+
+  .section-heading h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .section-heading p {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+
+  /* Tab content */
+  .tab-content { display: none; animation: fadeSlide 0.2s ease; }
+  .tab-content.active { display: block; }
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    .kanban-grid { grid-template-columns: 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+    .header-status { display: none; }
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--green);
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 13px;
+    color: var(--green);
+    font-family: var(--mono);
+    z-index: 999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: 0 0 20px rgba(16,185,129,0.2);
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* Scan line effect on header */
+  .logo-badge-wrap {
+    position: relative;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo-block">
+      <div class="logo-badge">AIMA</div>
+      <div class="header-title">
+        <h1>Auditoría y Diagnóstico de IA</h1>
+        <p>// plantilla de descubrimiento · cliente</p>
+      </div>
+    </div>
+    <div class="header-status">
+      <div class="status-dot">
+        <div class="dot"></div>
+        SESIÓN ACTIVA
+      </div>
+      <button class="save-btn" onclick="saveProgress()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Guardar Progreso
+      </button>
+    </div>
+  </div>
+
+  <nav class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('ventas', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      <span class="tab-num">01</span> Ventas & Delivery
+    </button>
+    <button class="tab-btn" onclick="switchTab('operaciones', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41"/></svg>
+      <span class="tab-num">02</span> Operaciones
+    </button>
+    <button class="tab-btn" onclick="switchTab('oportunidades', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      <span class="tab-num">03</span> Oportunidades IA
+    </button>
+    <button class="tab-btn" onclick="switchTab('ciber', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span class="tab-num">04</span> Ciberseguridad
+    </button>
+    <button class="tab-btn" onclick="switchTab('roadmap', this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      <span class="tab-num">05</span> Roadmap Técnico
+    </button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- TAB 1: VENTAS & DELIVERY -->
+  <div id="tab-ventas" class="tab-content active">
+    <div class="section-banner">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div>
+        <h2>// OBJETIVO DE LA AUDITORÍA</h2>
+        <p>Detectar fricciones en el proceso comercial, tareas humanas repetitivas y cuellos de botella en el pipeline de leads, así como procesos críticos que se puedan automatizar o mejorar con Inteligencia Artificial.</p>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-title">CRM y Herramientas</div>
+        <div class="field-group">
+          <label class="field-label">¿Qué herramientas / software usan para gestionar el área de ventas?</label>
+          <input class="field-input" placeholder="Ej: HubSpot, Pipedrive, Notion..." />
+        </div>
+        <div class="field-group">
+          <label class="field-label">¿Hay un CRM? ¿Cuál y qué versión? ¿Tiene las funcionalidades necesarias?</label>
+          <textarea class="field-textarea" placeholder="Describe el CRM actual, versión y limitaciones encontradas..."></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label">¿Hay pipeline visual o status de leads?</label>
+          <input class="field-input" placeholder="Sí / No / Parcialmente..." />
+        </div>
+        <div class="field-group">
+          <label class="field-label">¿Tienen flujos de lead scoring o tags automáticos?</label>
+          <input class="field-input" placeholder="Describe el sistema de puntuación si existe..." />
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Procesos Manuales y Equipo</div>
+        <div class="field-group">
+          <label class="field-label">¿Qué tareas hacen manualmente en el área de ventas?</label>
+          <textarea class="field-textarea" placeholder="Lista las tareas manuales principales..."></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label">¿Quién hace seguimiento / follow ups? ¿Manual o automatizado?</label>
+          <input class="field-input" placeholder="Responsable y método actual..." />
+        </div>
+        <div class="field-group">
+          <label class="field-label">¿Cómo se estructura el equipo de ventas? (Asignación de leads)</label>
+          <textarea class="field-textarea" placeholder="Describe la estructura y cómo se distribuyen los leads..."></textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Tiempos, Métricas y Volumen</div>
+        <div class="two-col">
+          <div class="field-group">
+            <label class="field-label">Tiempo prom. de respuesta</label>
+            <input class="field-input" placeholder="Ej: 2 horas" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Tasa de conversión</label>
+            <input class="field-input" placeholder="Ej: 15%" />
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Canales de venta activos</label>
+          <input class="field-input" placeholder="Llamada, WhatsApp, Ads, Email..." />
+        </div>
+        <div class="field-group">
+          <label class="field-label">¿Cuántas peticiones/leads tienen por semana, día y hora?</label>
+          <textarea class="field-textarea" placeholder="Ej: ~50 leads/semana, pico entre 10am-12pm..."></textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Delivery y Atención al Cliente</div>
+        <div class="field-group">
+          <label class="field-label">¿Cómo entregan su producto/servicio? (Tiempos de entrega)</label>
+          <textarea class="field-textarea" placeholder="Describe el proceso de delivery y tiempos..."></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Herramientas para control del Delivery</label>
+          <input class="field-input" placeholder="ClickUp, Trello, Notion, Asana..." />
+        </div>
+        <div class="field-group">
+          <label class="field-label">¿Hay tareas repetitivas en atención al cliente?</label>
+          <textarea class="field-textarea" placeholder="Lista las tareas repetitivas de soporte..."></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label">¿Se repiten siempre las mismas dudas? ¿Podrían automatizarse?</label>
+          <input class="field-input" placeholder="FAQs frecuentes y si se podría automatizar..." />
+        </div>
+      </div>
+    </div>
+
+    <div class="card-full">
+      <div class="card-title">Estado Actual de Automatizaciones / IA</div>
+      <p style="font-size:12px;color:var(--text3);margin-bottom:16px;font-family:var(--mono);">Si actualmente cuentan con alguna automatización o IA integrada, detállala aquí:</p>
+      <div class="two-col">
+        <div class="field-group">
+          <label class="field-label">¿Cuáles son y qué infraestructura utilizan?</label>
+          <textarea class="field-textarea" placeholder="Ej: n8n con Zapier conectado a CRM, Make para facturas..."></textarea>
+        </div>
+        <div class="field-group">
+          <label class="field-label">¿Hay human in the loop? ¿Optimizadas al 100%? ¿Coste operativo?</label>
+          <textarea class="field-textarea" placeholder="Describe el estado actual, costos y puntos de fricción..."></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: OPERACIONES -->
+  <div id="tab-operaciones" class="tab-content">
+    <div class="section-banner" style="border-left-color: var(--green);">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--green);"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2M19.07 19.07l-1.41-1.41M4.93 19.07l1.41-1.41"/></svg>
+      <div>
+        <h2 style="color:var(--green);">// OBJETIVO DE LA AUDITORÍA OPERATIVA</h2>
+        <p>Ver cómo se organiza el equipo y asegurar la fluidez operativa a través de automatización e integración entre herramientas.</p>
+      </div>
+    </div>
+
+    <div class="card" style="max-width:860px;">
+      <div class="card-title">Diagnóstico Operativo</div>
+      <div class="field-group">
+        <label class="field-label">¿Dónde vive la información general de la empresa?</label>
+        <input class="field-input" placeholder="Notion, ClickUp, Drive, SharePoint..." />
+      </div>
+      <div class="field-group">
+        <label class="field-label">¿Hay procesos documentados o todo está en la cabeza del CEO/Directivos?</label>
+        <textarea class="field-textarea" placeholder="Nivel de documentación actual, SOPs existentes..."></textarea>
+      </div>
+      <div class="field-group">
+        <label class="field-label">¿Tienen flujos repetitivos internos que se hacen manualmente?</label>
+        <textarea class="field-textarea" placeholder="Ej: Pasar datos de un Excel al CRM todos los viernes..."></textarea>
+      </div>
+      <div class="field-group">
+        <label class="field-label">¿Hay dependencia crítica de personas clave para procesos rutinarios?</label>
+        <input class="field-input" placeholder="Identifica cuellos de botella por personas..." />
+      </div>
+      <div class="field-group">
+        <label class="field-label">¿Qué tareas administrativas o de análisis podría hacer una IA copiloto o bot?</label>
+        <textarea class="field-textarea" placeholder="Genera reportes, resume reuniones, responde emails internos..."></textarea>
+      </div>
+      <div class="two-col">
+        <div class="field-group">
+          <label class="field-label">Volumen de tareas internas (semana/día/hora)</label>
+          <input class="field-input" placeholder="Ej: ~20 tareas/día, picos lunes AM..." />
+        </div>
+        <div class="field-group">
+          <label class="field-label">¿Quién recibe notificaciones en cada área?</label>
+          <input class="field-input" placeholder="Mapa de notificaciones por área/rol..." />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: OPORTUNIDADES IA -->
+  <div id="tab-oportunidades" class="tab-content">
+    <div class="section-heading">
+      <h2>Detección de Oportunidades · IA & Automatización</h2>
+      <p>Cruzar ineficiencias detectadas con soluciones IA/automáticas posibles. Clasificadas por dificultad, impacto y urgencia.</p>
+    </div>
+
+    <div class="table-wrapper">
+      <div class="table-header-row">
+        <span class="table-title">// OPORTUNIDADES_DETECTADAS</span>
+        <span class="table-meta" id="opp-count">4 entradas</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="data-table" id="opp-table">
+          <thead>
+            <tr>
+              <th style="width:180px;">Solución Propuesta</th>
+              <th style="width:110px;">Área</th>
+              <th style="width:180px;">Problema Detectado</th>
+              <th style="width:90px;">Impacto</th>
+              <th style="width:100px;">Dif. Técnica</th>
+              <th style="width:90px;">Urgencia</th>
+              <th style="width:190px;">Descripción</th>
+              <th style="width:90px;">Riesgo Seg.</th>
+              <th style="width:44px;"></th>
+            </tr>
+          </thead>
+          <tbody id="opp-tbody">
+          </tbody>
+        </table>
+      </div>
+      <button class="add-row-btn" onclick="addOportunidad()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Añadir nueva oportunidad
+      </button>
+    </div>
+  </div>
+
+  <!-- TAB 4: CIBERSEGURIDAD -->
+  <div id="tab-ciber" class="tab-content">
+    <div class="section-heading">
+      <h2>Estudio de Vulnerabilidades · Ciberseguridad</h2>
+      <p>Auditoría de seguridad enfocada en propuestas de inteligencia artificial y automatización, incluyendo accesos, APIs, trazabilidad, backup y buenas prácticas.</p>
+    </div>
+
+    <div class="table-wrapper">
+      <div class="table-header-row">
+        <span class="table-title">// VULNERABILIDADES_IDENTIFICADAS</span>
+        <span class="table-meta" style="color:var(--red);">⚠ 3 riesgos activos</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="data-table ciber-table">
+          <thead>
+            <tr>
+              <th style="width:210px;">Propuesta / Vulnerabilidad</th>
+              <th style="width:200px;">Oportunidad Asociada</th>
+              <th>Descripción del Riesgo</th>
+              <th style="width:120px;">Dif. Técnica (Fix)</th>
+              <th style="width:100px;">Urgencia</th>
+              <th style="width:110px;">Nivel de Riesgo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="vuln-name">Exposición de claves API en herramientas no seguras</td>
+              <td class="vuln-opp">Automatización envío de facturas a la asesoría</td>
+              <td class="vuln-desc">Las integraciones vía Zapier/n8n usan claves API copiadas sin cifrado en Notion o Sheets.</td>
+              <td><span class="ciber-badge-gray">Baja</span></td>
+              <td><span class="ciber-badge-amber">Media</span></td>
+              <td><span class="ciber-badge-solid-red">Alto</span></td>
+            </tr>
+            <tr>
+              <td class="vuln-name">Automatizaciones sin control de autenticación avanzada</td>
+              <td class="vuln-opp">Análisis y data studio con LLM</td>
+              <td class="vuln-desc">Workflows que envían info sensible entre CRMs/DBs no tienen medidas como OAuth2 o expiración de tokens.</td>
+              <td><span class="ciber-badge-gray">Media</span></td>
+              <td><span class="ciber-badge-red">Alta</span></td>
+              <td><span class="ciber-badge-solid-red">Alto</span></td>
+            </tr>
+            <tr>
+              <td class="vuln-name">Envío de datos sensibles por canales inseguros</td>
+              <td class="vuln-opp">Revisión y archivo de estudios médicos</td>
+              <td class="vuln-desc">Automatizaciones que envían emails con informes o CSVs a través de Gmail sin cifrado de extremo a extremo.</td>
+              <td><span class="ciber-badge-gray">Media</span></td>
+              <td><span class="ciber-badge-red">Alta</span></td>
+              <td><span class="ciber-badge-solid-amber">Medio</span></td>
+            </tr>
+            <tr class="note-row">
+              <td colspan="6">* Este listado se actualizará durante la fase técnica de implementación *</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 5: ROADMAP -->
+  <div id="tab-roadmap" class="tab-content">
+    <div class="section-heading">
+      <h2>Roadmap Técnico</h2>
+      <p>Diseño del roadmap IA + integraciones y mejoras, priorizado por impacto y facilidad de implementación.</p>
+    </div>
+
+    <div class="kanban-grid" id="kanban-grid">
+    </div>
+  </div>
+
+</main>
+
+<div class="toast" id="toast">✓ Progreso guardado correctamente</div>
+
+<script>
+// ---- DATA ----
+const oportunidades = [
+  { id: 1, solucion: 'Revisión y archivo de estudios médicos', area: 'Delivery', problema: 'Posible error humano en la ejecución del proceso', impacto: 'Alto', dificultad: 'Media', urgencia: 'Media', descripcion: 'Configurar RPA para extraer datos y archivar en CRM.', riesgo: 'Bajo' },
+  { id: 2, solucion: 'Análisis y data studio informes médicos con LLM', area: 'Delivery', problema: 'No se tiene un balance tangible de problemas comunes', impacto: 'Alto', dificultad: 'Alta', urgencia: 'Media', descripcion: 'Conectar base de datos con LLM para generar dashboards automáticos.', riesgo: 'Medio' },
+  { id: 3, solucion: 'Agente IA que resuelva incidencias con clientes', area: 'Delivery', problema: 'Altos tiempos de respuesta y margen de error a la entrega', impacto: 'Alto', dificultad: 'Media', urgencia: 'Alta', descripcion: 'Chatbot entrenado con la base de conocimiento de la empresa.', riesgo: 'Bajo' },
+  { id: 4, solucion: 'Automatización envío de facturas a la asesoría', area: 'Operaciones', problema: 'Pérdida de tiempo (10h/trimestre) en enviar facturas', impacto: 'Media', dificultad: 'Baja', urgencia: 'Media', descripcion: 'Script automático que recopile PDFs y los envíe por email/API.', riesgo: 'Bajo' },
+];
+
+const roadmapData = [
+  { fase: 'Fase 1', label: 'Quick Wins', periodo: 'Mes 1', items: [
+    { id: 1, nombre: 'Automatización envío de facturas a la asesoría', estado: 'Sin empezar' },
+    { id: 2, nombre: 'Agente IA básico para FAQs de clientes', estado: 'Sin empezar' },
+  ]},
+  { fase: 'Fase 2', label: 'Optimización Core', periodo: 'Mes 2–3', items: [
+    { id: 3, nombre: 'Revisión y archivo de estudios médicos (RPA)', estado: 'Sin empezar' },
+  ]},
+  { fase: 'Fase 3', label: 'IA Avanzada', periodo: 'Mes 4+', items: [
+    { id: 4, nombre: 'Análisis y data studio con LLM', estado: 'Sin empezar' },
+  ]},
+];
+
+// ---- TABS ----
+function switchTab(tabId, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tabId).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ---- OPORTUNIDADES ----
+function getChipClass(value, type) {
+  if (type === 'impacto') {
+    return value === 'Alto' ? 'chip-green' : value === 'Media' ? 'chip-amber' : 'chip-gray';
+  }
+  if (type === 'urgencia') {
+    return value === 'Alta' ? 'chip-red' : value === 'Media' ? 'chip-amber' : 'chip-gray';
+  }
+  return 'chip-gray';
+}
+
+function renderOportunidades() {
+  const tbody = document.getElementById('opp-tbody');
+  tbody.innerHTML = '';
+  oportunidades.forEach(op => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><textarea class="table-textarea" onchange="updateOp(${op.id},'solucion',this.value)">${op.solucion}</textarea></td>
+      <td>
+        <select class="table-select" onchange="updateOp(${op.id},'area',this.value)">
+          ${['Delivery','Operaciones','Ventas','Marketing'].map(a => `<option${a===op.area?' selected':''}>${a}</option>`).join('')}
+        </select>
+      </td>
+      <td><textarea class="table-textarea" onchange="updateOp(${op.id},'problema',this.value)">${op.problema}</textarea></td>
+      <td>
+        <select class="table-select" onchange="updateOp(${op.id},'impacto',this.value)">
+          ${['Alto','Media','Bajo'].map(v => `<option${v===op.impacto?' selected':''}>${v}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <select class="table-select" onchange="updateOp(${op.id},'dificultad',this.value)">
+          ${['Alta','Media','Baja'].map(v => `<option${v===op.dificultad?' selected':''}>${v}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <select class="table-select" onchange="updateOp(${op.id},'urgencia',this.value)">
+          ${['Alta','Media','Baja'].map(v => `<option${v===op.urgencia?' selected':''}>${v}</option>`).join('')}
+        </select>
+      </td>
+      <td><textarea class="table-textarea" onchange="updateOp(${op.id},'descripcion',this.value)">${op.descripcion}</textarea></td>
+      <td>
+        <select class="table-select" onchange="updateOp(${op.id},'riesgo',this.value)">
+          ${['Alto','Medio','Bajo'].map(v => `<option${v===op.riesgo?' selected':''}>${v}</option>`).join('')}
+        </select>
+      </td>
+      <td><button class="del-btn" onclick="removeOp(${op.id})"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('opp-count').textContent = oportunidades.length + ' entrada' + (oportunidades.length !== 1 ? 's' : '');
+}
+
+function updateOp(id, field, value) {
+  const op = oportunidades.find(o => o.id === id);
+  if (op) op[field] = value;
+}
+
+function addOportunidad() {
+  oportunidades.push({ id: Date.now(), solucion: '', area: 'Ventas', problema: '', impacto: 'Bajo', dificultad: 'Baja', urgencia: 'Baja', descripcion: '', riesgo: 'Bajo' });
+  renderOportunidades();
+  // scroll to last row
+  const tbody = document.getElementById('opp-tbody');
+  tbody.lastElementChild?.querySelector('textarea')?.focus();
+}
+
+function removeOp(id) {
+  const idx = oportunidades.findIndex(o => o.id === id);
+  if (idx > -1) { oportunidades.splice(idx, 1); renderOportunidades(); }
+}
+
+// ---- ROADMAP ----
+function renderKanban() {
+  const grid = document.getElementById('kanban-grid');
+  grid.innerHTML = '';
+  roadmapData.forEach(col => {
+    const div = document.createElement('div');
+    div.className = 'kanban-col';
+    div.innerHTML = `
+      <div class="kanban-col-header">
+        <div class="kanban-col-label">${col.fase} · ${col.periodo}</div>
+        <div class="kanban-col-phase">${col.label}</div>
+      </div>
+      <div class="kanban-col-body" id="kanban-body-${col.fase.replace(/\s/g,'')}">
+        ${col.items.map(item => `
+          <div class="kanban-card">
+            <div class="kanban-card-name">${item.nombre}</div>
+            <select class="kanban-status-select" onchange="updateKanbanStatus('${col.fase}',${item.id},this.value)">
+              ${['Sin empezar','En análisis','Desarrollando','Completado'].map(s => `<option${s===item.estado?' selected':''}>${s}</option>`).join('')}
+            </select>
+          </div>
+        `).join('')}
+        <button class="add-task-btn" onclick="addKanbanTask('${col.fase}')">+ Añadir tarea</button>
+      </div>
+    `;
+    grid.appendChild(div);
+  });
+}
+
+function updateKanbanStatus(fase, id, value) {
+  const col = roadmapData.find(c => c.fase === fase);
+  if (col) { const item = col.items.find(i => i.id === id); if (item) item.estado = value; }
+}
+
+function addKanbanTask(fase) {
+  const col = roadmapData.find(c => c.fase === fase);
+  if (col) {
+    const nombre = prompt('Nombre de la nueva tarea:');
+    if (nombre && nombre.trim()) {
+      col.items.push({ id: Date.now(), nombre: nombre.trim(), estado: 'Sin empezar' });
+      renderKanban();
+    }
+  }
+}
+
+// ---- SAVE ----
+function saveProgress() {
+  const toast = document.getElementById('toast');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2800);
+}
+
+// ---- INIT ----
+renderOportunidades();
+renderKanban();
+</script>
+</body>
+</html>
